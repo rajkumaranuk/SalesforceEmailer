@@ -1,4 +1,7 @@
 import com.sforce.soap.enterprise.*;
+import com.sforce.soap.enterprise.sobject.Account;
+import com.sforce.soap.enterprise.sobject.Contact;
+import com.sforce.soap.enterprise.sobject.EmailTemplate;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
@@ -76,21 +79,49 @@ public class MainSingle
 	public static void sendTemplatedEmail() throws ConnectionException
 	{
 
-		GetUserInfoResult guir = connection.getUserInfo();
+		String name = "00358000015xGRK";
+
+//		GetUserInfoResult guir = connection.getUserInfo();
 
 		SingleEmailMessage email = new SingleEmailMessage();
-		email.setTargetObjectId(guir.getUserId());
-		email.setTemplateId("00X58000000fz0a");
-		email.setSaveAsActivity(false);
 
-		SingleEmailMessage[] messages = { email };
-		SendEmailResult[] results = connection.sendEmail(messages);
-		if (results[0].isSuccess()) {
-			System.out.println("The email was sent successfully.");
+		QueryResult queryResults = connection.query("SELECT Id, Name FROM Contact where Email = 'kumaran.thava@gmail.com'");
+		if (queryResults.getSize() > 0) {
+			// cast the SObject to a strongly-typed Account
+			Contact a = (Contact)queryResults.getRecords()[0];
+			System.out.println("Account Id: " + a.getId() + " - Name: "+a.getName());
+
+			email.setTargetObjectId(a.getId());
+			email.setTemplateId("00X58000000fz0iEAA");
+			email.setSaveAsActivity(false);
+
+			SingleEmailMessage[] messages = { email };
+			SendEmailResult[] results = connection.sendEmail(messages);
+			if (results[0].isSuccess()) {
+				System.out.println("The email was sent successfully.");
+			} else {
+				System.out.println("The email failed to send: "
+						+ results[0].getErrors()[0].getMessage());
+			}
 		} else {
-			System.out.println("The email failed to send: "
-					+ results[0].getErrors()[0].getMessage());
+			System.out.println("Unable to find the account");
 		}
+
+//		email.setTemplateId("00X58000000fz0a");
+
+
+//		QueryResult queryResults = connection.query("select Id, Subject, HtmlValue, Body from EmailTemplate where Id ='00X58000000fz0iEAA'");
+//		if (queryResults.getSize() > 0) {
+//			for (int i=0;i<queryResults.getRecords().length;i++) {
+//				// cast the SObject to a strongly-typed Account
+//				EmailTemplate emailTemplate = (EmailTemplate)queryResults.getRecords()[i];
+//				String plainBody = emailTemplate.getBody();
+//				plainBody = plainBody.replace("{!CustomField}", "raj kumaran UK");
+//				email.setPlainTextBody(plainBody);
+//			}
+//		}
+
+
 
 	}
 
